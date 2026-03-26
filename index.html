@@ -3,48 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Start Moto</title>
+    <title>Smart Start Moto | Dashboard</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 300px; }
-        h1 { color: #00e676; font-size: 24px; }
-        .status { margin: 20px 0; padding: 10px; border-radius: 10px; background: #333; font-weight: bold; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-start { background: #00e676; color: black; }
-        .btn-stop { background: #ff5252; color: white; }
-        .btn:active { transform: scale(0.95); }
-        .anti-theft { margin-top: 20px; border-top: 1px solid #444; padding-top: 20px; }
-        .toggle-container { display: flex; justify-content: space-between; align-items: center; }
-        /* Simple Toggle Switch */
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-green: #00e676;
+            --primary-red: #ff5252;
+            --primary-blue: #2196F3;
+            --primary-orange: #ff9800;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px; /* Sapat para sa laptop */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card { 
+            background-color: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow); 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1 { 
+            color: var(--primary-green); 
+            font-size: 28px; 
+            margin-bottom: 20px; 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-panel {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .status { 
+            padding: 15px; 
+            border-radius: 10px; 
+            background: #333; 
+            font-weight: bold; 
+            font-size: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+
+        .status.on {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        .status.off {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn { 
+            width: 100%; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            -webkit-user-select: none; /* Bawal i-select ang text */
+            user-select: none;
+        }
+
+        .btn:active { 
+            transform: translateY(2px); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .btn-start { background-color: var(--primary-green); color: black; }
+        .btn-stop { background-color: var(--primary-red); color: white; }
+        .btn-horn { background-color: var(--primary-blue); color: white; }
+        .btn-hazard { background-color: var(--primary-orange); color: white; }
+
+        /* Full-width buttons for smaller groups */
+        .btn-full {
+            grid-column: span 2;
+        }
+
+        .anti-theft { 
+            margin-top: 25px; 
+            border-top: 1px solid #444; 
+            padding-top: 20px; 
+            width: 100%;
+        }
+
+        .toggle-container { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%;
+        }
+
+        .switch { 
+            position: relative; 
+            display: inline-block; 
+            width: 60px; 
+            height: 34px; 
+        }
+
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #2196F3; }
+
+        .slider { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: #555; 
+            transition: .4s; 
+            border-radius: 34px; 
+        }
+
+        .slider:before { 
+            position: absolute; 
+            content: ""; 
+            height: 26px; 
+            width: 26px; 
+            left: 4px; 
+            bottom: 4px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%; 
+        }
+
+        input:checked + .slider { background-color: var(--primary-blue); }
         input:checked + .slider:before { transform: translateX(26px); }
+
+        p#securityStatus { 
+            font-size: 14px; 
+            color: #888; 
+            margin-top: 10px;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            h1 { font-size: 24px; }
+            .card { padding: 15px; }
+            .btn { padding: 15px; font-size: 16px; }
+            .status { font-size: 18px; }
+        }
     </style>
   <script type="module" src="/main.js"></script>
 </head>
 <body>
-    <div class="card">
-        <h1>MOTO SYSTEM</h1>
-        <div id="statusBox" class="status">ENGINE: OFF</div>
-        
-        <button id="btnStart" class="btn btn-start">START ENGINE</button>
-        <button id="btnStop" class="btn btn-stop">STOP ENGINE</button>
-
-        <div class="anti-theft">
-            <div class="toggle-container">
-                <span>ANTI-THEFT</span>
-                <label class="switch">
-                    <input type="checkbox" id="securityToggle">
-                    <span class="slider"></span>
-                </label>
+    <div class="dashboard-container">
+        <div class="card">
+            <h1>MOTO SYSTEM</h1>
+            <div class="status-panel">
+                <div id="statusBox" class="status off">ENGINE: OFF</div>
             </div>
-            <p id="securityStatus" style="font-size: 12px; color: #888;">System: Unlocked</p>
+            
+            <div class="control-group">
+                <button id="btnStart" class="btn btn-start">START ENGINE</button>
+                <button id="btnStop" class="btn btn-stop">STOP ENGINE</button>
+                <button id="btnHorn" class="btn btn-horn btn-full">HORN</button>
+                <button id="btnHazard" class="btn btn-hazard btn-full">HAZARD: OFF</button>
+            </div>
+
+            <div class="anti-theft">
+                <div class="toggle-container">
+                    <span>ANTI-THEFT SYSTEM</span>
+                    <label class="switch">
+                        <input type="checkbox" id="securityToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <p id="securityStatus">System: Unlocked</p>
+            </div>
         </div>
-    </div>
 
-
+        </div>
 </body>
 </html>
