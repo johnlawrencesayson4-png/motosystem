@@ -14,57 +14,87 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const updateDB = (path, state) => {
-    set(ref(db, `ignition/${path}`), state);
-    console.log(`Sent to Firebase: ${path} -> ${state}`);
+// Helper function para sa Firebase updates
+const updateDB = (path, state) => set(ref(db, `ignition/${path}`), state);
+
+// --- 1. ENGINE START (Momentary + Status Update) ---
+const startBtn = document.getElementById('btnStart');
+
+const handleStart = (state) => {
+    updateDB('start', state); // Para sa starter relay ng motor
+    
+    // Kapag pinindot (ON), dapat mag-ON din ang engine status display
+    if (state === "ON") {
+        updateDB('engine', "ON");
+    }
 };
 
-// --- MEMENTARY BUTTONS (Start & Horn) ---
-const setupMomentary = (btnId, dbPath) => {
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
+// Mouse events for Laptop
+startBtn.onmousedown = () => handleStart("ON");
+startBtn.onmouseup = () => handleStart("OFF");
+startBtn.onmouseleave = () => handleStart("OFF");
 
-    const startAction = (e) => {
-        e.preventDefault(); // Iwas zoom sa mobile
-        updateDB(dbPath, "ON");
-    };
-    const stopAction = () => updateDB(dbPath, "OFF");
+// Touch events for Cellphone
+startBtn.addEventListener('touchstart', (e) => { 
+    e.preventDefault(); 
+    handleStart("ON"); 
+}, { passive: false });
+startBtn.addEventListener('touchend', () => handleStart("OFF"));
 
-    // Mouse Events
-    btn.onmousedown = startAction;
-    btn.onmouseup = stopAction;
-    btn.onmouseleave = stopAction;
 
-    // Touch Events (Para sa Cellphone)
-    btn.addEventListener('touchstart', startAction, { passive: false });
-    btn.addEventListener('touchend', stopAction);
-};
+// --- 2. ENGINE STOP ---
+document.getElementById('btnStop').onclick = () => updateDB('engine', "OFF");
 
-setupMomentary('btnStart', 'start');
-setupMomentary('btnHorn', 'horn');
 
-// --- TOGGLE BUTTONS (Hazard & Security) ---
+// --- 3. HORN (Momentary) ---
+const hornBtn = document.getElementById('btnHorn');
+const handleHorn = (state) => updateDB('horn', state);
+
+hornBtn.onmousedown = () => handleHorn("ON");
+hornBtn.onmouseup = () => handleHorn("OFF");
+hornBtn.onmouseleave = () => handleHorn("OFF");
+
+hornBtn.addEventListener('touchstart', (e) => { 
+    e.preventDefault(); 
+    handleHorn("ON"); 
+}, { passive: false });
+hornBtn.addEventListener('touchend', () => handleHorn("OFF"));
+
+
+// --- 4. HAZARD (Toggle) ---
+let hazardActive = false;
 const hazardBtn = document.getElementById('btnHazard');
-let currentHazard = "OFF";
 
 onValue(ref(db, 'ignition/hazard'), (snapshot) => {
-    currentHazard = snapshot.val() || "OFF";
-    hazardBtn.innerText = `HAZARD: ${currentHazard}`;
+    hazardActive = (snapshot.val() === "ON");
+    hazardBtn.innerText = `HAZARD: ${hazardActive ? "ON" : "OFF"}`;
 });
 
 hazardBtn.onclick = () => {
-    updateDB('hazard', currentHazard === "OFF" ? "ON" : "OFF");
+    updateDB('hazard', hazardActive ? "OFF" : "ON");
 };
 
+
+// --- 5. ANTI-THEFT (Toggle) ---
 const securityToggle = document.getElementById('securityToggle');
 securityToggle.onchange = (e) => {
-    updateDB('security', e.target.checked ? "LOCKED" : "UNLOCKED");
+    const state = e.target.checked ? "LOCKED" : "UNLOCKED";
+    updateDB('security', state);
+    document.getElementById('securityStatus').innerText = `System: ${state}`;
 };
 
-// --- ENGINE STATUS MONITOR ---
+
+// --- 6. ENGINE STATUS MONITOR (The one that turns GREEN) ---
 onValue(ref(db, 'ignition/engine'), (snapshot) => {
     const val = snapshot.val() || "OFF";
     const statusBox = document.getElementById('statusBox');
+    
     statusBox.innerText = `ENGINE: ${val}`;
-    statusBox.className = (val === "ON") ? "status on" : "status off";
+    
+    // Dito nagpapalit ang kulay base sa value sa Firebase
+    if (val === "ON") {
+        statusBox.className = "status on"; // Magiging Green (based on CSS)
+    } else {
+        statusBox.className = "status off"; // Magiging Red
+    }
 });
