@@ -14,87 +14,64 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Helper function para sa momentary switches
-const handleMomentary = (path, state) => {
-    set(ref(db, `ignition/${path}`), state);
-    console.log(`${path.toUpperCase()}: ${state}`);
-};
+// Helper function para sa momentary updates (Start/Horn)
+const updateDB = (path, state) => set(ref(db, `ignition/${path}`), state);
 
-// --- 1. ENGINE CONTROL ---
-
-// Engine Start (Momentary: ON habang pinipindot, OFF kapag binitawan)
+// --- 1. START ENGINE (Momentary) ---
 const startBtn = document.getElementById('btnStart');
-const stopBtn = document.getElementById('btnStop');
+const handleStart = (state) => updateDB('start', state);
 
-startBtn.onmousedown = () => handleMomentary('start', 'ON'); // Tutunog ang starter
-startBtn.onmouseup = () => handleMomentary('start', 'OFF');  // Titigil ang starter
-startBtn.ontouchstart = () => handleMomentary('start', 'ON'); // Para sa mobile
-startBtn.ontouchend = () => handleMomentary('start', 'OFF');
+startBtn.onmousedown = () => handleStart("ON");
+startBtn.onmouseup = () => handleStart("OFF");
+startBtn.ontouchstart = () => handleStart("ON");
+startBtn.ontouchend = () => handleStart("OFF");
 
-// Engine Stop (Toggle: ON/OFF)
-stopBtn.onclick = () => {
-    // Kapag pinindot ang stop, siguraduhing OFF ang engine
-    set(ref(db, 'ignition/engine'), 'OFF');
-    console.log("ENGINE: OFF (Command Sent)");
+// --- 2. STOP ENGINE (Toggle to OFF) ---
+document.getElementById('btnStop').onclick = () => {
+    updateDB('engine', "OFF");
 };
 
-// --- 2. HORN CONTROL ---
-
-// Horn Control (Momentary: Tutunog habang pinipindot)
+// --- 3. HORN (Momentary) ---
 const hornBtn = document.getElementById('btnHorn');
-hornBtn.onmousedown = () => handleMomentary('horn', 'ON');
-hornBtn.onmouseup = () => handleMomentary('horn', 'OFF');
-hornBtn.ontouchstart = () => handleMomentary('horn', 'ON');
-hornBtn.ontouchend = () => handleMomentary('horn', 'OFF');
+const handleHorn = (state) => updateDB('horn', state);
 
-// --- 3. HAZARD CONTROL ---
+hornBtn.onmousedown = () => handleHorn("ON");
+hornBtn.onmouseup = () => handleHorn("OFF");
+hornBtn.ontouchstart = () => handleHorn("ON");
+hornBtn.ontouchend = () => handleHorn("OFF");
 
-// Hazard Control (Toggle: Isang pindot para ON, isang pindot para OFF)
-const hazardBtn = document.getElementById('btnHazard');
+// --- 4. HAZARD (Toggle) ---
 let hazardActive = false;
+const hazardBtn = document.getElementById('btnHazard');
 
-// Kumuha muna ng initial state mula sa DB
+// Listen sa actual state ng hazard sa DB
 onValue(ref(db, 'ignition/hazard'), (snapshot) => {
-    const value = snapshot.val();
-    hazardActive = (value === 'ON');
-    updateHazardUI();
+    hazardActive = (snapshot.val() === "ON");
+    hazardBtn.innerText = `HAZARD: ${hazardActive ? "ON" : "OFF"}`;
+    hazardBtn.style.opacity = hazardActive ? "0.8" : "1";
 });
 
-const updateHazardUI = () => {
-    const state = hazardActive ? "ON" : "OFF";
-    hazardBtn.innerText = `HAZARD: ${state}`;
-    if (hazardActive) {
-        hazardBtn.style.backgroundColor = '#e68a00'; // Darker orange kapag ON
-    } else {
-        hazardBtn.style.backgroundColor = '#ff9800'; // Default orange
-    }
-};
-
 hazardBtn.onclick = () => {
-    hazardActive = !hazardActive; // I-toggle ang local variable
-    set(ref(db, 'ignition/hazard'), hazardActive ? "ON" : "OFF");
-    console.log(`HAZARD: ${hazardActive ? "ON" : "OFF"}`);
+    updateDB('hazard', hazardActive ? "OFF" : "ON");
 };
 
-// --- 4. ANTI-THEFT LOGIC ---
-document.getElementById('securityToggle').onchange = (e) => {
+// --- 5. ANTI-THEFT ---
+const securityToggle = document.getElementById('securityToggle');
+securityToggle.onchange = (e) => {
     const state = e.target.checked ? "LOCKED" : "UNLOCKED";
-    set(ref(db, 'ignition/security'), state);
+    updateDB('security', state);
     document.getElementById('securityStatus').innerText = `System: ${state}`;
-    console.log(`SECURITY: ${state}`);
 };
 
-// --- 5. REAL-TIME STATUS UPDATE ---
-// Basahin ang 'ignition/engine' state para sa display
+// --- 6. STATUS MONITOR (ENGINE ON/OFF) ---
 onValue(ref(db, 'ignition/engine'), (snapshot) => {
-    const value = snapshot.val();
+    const val = snapshot.val() || "OFF";
     const statusBox = document.getElementById('statusBox');
-    statusBox.innerText = `ENGINE: ${value}`;
+    statusBox.innerText = `ENGINE: ${val}`;
     
-    // Palitan ang kulay depende sa status
-    if (value === 'ON') {
-        statusBox.className = 'status on';
+    if (val === "ON") {
+        statusBox.className = "status on";
     } else {
-        statusBox.className = 'status off';
+        statusBox.className = "status off";
     }
 });
