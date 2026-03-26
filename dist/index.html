@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Start Moto | Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-green: #00e676;
+            --primary-red: #ff5252;
+            --primary-blue: #2196F3;
+            --primary-orange: #ff9800;
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+
+        .dashboard-container {
+            width: 95%;
+            max-width: 900px; /* Malaki para sa laptop */
+            padding: 20px;
+        }
+
+        .card { 
+            background-color: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 30px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7); 
+            text-align: center;
+        }
+
+        h1 { color: var(--primary-green); font-size: 32px; letter-spacing: 3px; margin-bottom: 30px; text-transform: uppercase; }
+
+        .status-panel { margin-bottom: 30px; }
+
+        .status { 
+            padding: 25px; 
+            border-radius: 20px; 
+            background: #252525; 
+            font-weight: bold; 
+            font-size: 26px;
+            border: 4px solid #444;
+            transition: 0.4s;
+        }
+
+        .status.on { border-color: var(--primary-green); color: var(--primary-green); box-shadow: 0 0 15px rgba(0,230,118,0.3); }
+        .status.off { border-color: var(--primary-red); color: var(--primary-red); }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn { 
+            padding: 25px; 
+            border: none; 
+            border-radius: 20px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            text-transform: uppercase;
+            user-select: none;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .btn:active { transform: scale(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+
+        .btn-start { background: var(--primary-green); color: #000; }
+        .btn-stop { background: var(--primary-red); color: #fff; }
+        .btn-horn { background: var(--primary-blue); color: #fff; grid-column: span 2; }
+        .btn-hazard { background: var(--primary-orange); color: #fff; grid-column: span 2; }
+
+        .anti-theft { 
+            margin-top: 40px; 
+            padding-top: 25px; 
+            border-top: 1px solid #444; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch { position: relative; width: 70px; height: 38px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #555; transition: .4s; border-radius: 38px; }
+        .slider:before { position: absolute; content: ""; height: 30px; width: 30px; left: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: var(--primary-blue); }
+        input:checked + .slider:before { transform: translateX(32px); }
+
+        @media (max-width: 600px) {
+            .control-grid { gap: 10px; }
+            .btn { font-size: 16px; padding: 18px; }
+            h1 { font-size: 24px; }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-pHGWUFPJ.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="card">
+            <h1>MOTO DASHBOARD</h1>
+            <div class="status-panel"><div id="statusBox" class="status off">ENGINE: OFF</div></div>
+            <div class="control-grid">
+                <button id="btnStart" class="btn btn-start">START</button>
+                <button id="btnStop" class="btn btn-stop">STOP</button>
+                <button id="btnHorn" class="btn btn-horn">HORN</button>
+                <button id="btnHazard" class="btn btn-hazard">HAZARD: OFF</button>
+            </div>
+            <div class="anti-theft">
+                <div style="text-align: left;"><span style="display: block; font-weight: bold; font-size: 18px;">ANTI-THEFT</span><small id="securityStatus" style="color: #888; font-size: 14px;">System: Unlocked</small></div>
+                <label class="switch"><input type="checkbox" id="securityToggle"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
