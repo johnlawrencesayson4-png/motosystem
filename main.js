@@ -4,12 +4,12 @@ import { getDatabase, ref, set, onValue } from "firebase/database";
 const firebaseConfig = {
     apiKey: "AIzaSyAcm1CkxsM_UnbiGYirI_AG6dBzt6Yk5Vc",
     authDomain: "motorsystem-7b532.firebaseapp.com",
-    databaseURL: "https://motorsystem-7b532-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL: "https://motorsystem-7b532-default-rtdb.asia-southeast1.firebasedatabase.app", // DAPAT TUGMA DITO
     projectId: "motorsystem-7b532",
     storageBucket: "motorsystem-7b532.appspot.com",
     messagingSenderId: "1028712392437",
     appId: "1:1028712392437:web:8e3649520b299e50401d89"
-};
+};;
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
