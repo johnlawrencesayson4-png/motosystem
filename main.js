@@ -17,84 +17,88 @@ const db = getDatabase(app);
 // Helper function para sa Firebase updates
 const updateDB = (path, state) => set(ref(db, `ignition/${path}`), state);
 
-// --- 1. ENGINE START (Momentary + Status Update) ---
-const startBtn = document.getElementById('btnStart');
+// --- 1. ENGINE CONTROL (START & STOP) ---
+// Inalis na natin ang 'start' path, 'engine' status na lang ang gagamitin
+const btnStart = document.getElementById('btnStart');
+const btnStop = document.getElementById('btnStop');
 
-const handleStart = (state) => {
-    updateDB('start', state); // Para sa starter relay ng motor
-    
-    // Kapag pinindot (ON), dapat mag-ON din ang engine status display
-    if (state === "ON") {
-        updateDB('engine', "ON");
-    }
-};
+if (btnStart) {
+    btnStart.onclick = () => updateDB('engine', "ON");
+}
 
-// Mouse events for Laptop
-startBtn.onmousedown = () => handleStart("ON");
-startBtn.onmouseup = () => handleStart("OFF");
-startBtn.onmouseleave = () => handleStart("OFF");
-
-// Touch events for Cellphone
-startBtn.addEventListener('touchstart', (e) => { 
-    e.preventDefault(); 
-    handleStart("ON"); 
-}, { passive: false });
-startBtn.addEventListener('touchend', () => handleStart("OFF"));
+if (btnStop) {
+    btnStop.onclick = () => updateDB('engine', "OFF");
+}
 
 
-// --- 2. ENGINE STOP ---
-document.getElementById('btnStop').onclick = () => updateDB('engine', "OFF");
-
-
-// --- 3. HORN (Momentary) ---
+// --- 2. HORN (Momentary Control) ---
 const hornBtn = document.getElementById('btnHorn');
-const handleHorn = (state) => updateDB('horn', state);
 
-hornBtn.onmousedown = () => handleHorn("ON");
-hornBtn.onmouseup = () => handleHorn("OFF");
-hornBtn.onmouseleave = () => handleHorn("OFF");
+if (hornBtn) {
+    const hornOn = (e) => {
+        if (e.cancelable) e.preventDefault();
+        updateDB('horn', "ON");
+    };
+    const hornOff = () => updateDB('horn', "OFF");
 
-hornBtn.addEventListener('touchstart', (e) => { 
-    e.preventDefault(); 
-    handleHorn("ON"); 
-}, { passive: false });
-hornBtn.addEventListener('touchend', () => handleHorn("OFF"));
+    // Mouse events
+    hornBtn.onmousedown = hornOn;
+    hornBtn.onmouseup = hornOff;
+    hornBtn.onmouseleave = hornOff;
+
+    // Touch events for Mobile
+    hornBtn.addEventListener('touchstart', hornOn, { passive: false });
+    hornBtn.addEventListener('touchend', hornOff);
+}
 
 
-// --- 4. HAZARD (Toggle) ---
-let hazardActive = false;
+// --- 3. HAZARD (Toggle Control) ---
 const hazardBtn = document.getElementById('btnHazard');
+let hazardActive = false;
 
 onValue(ref(db, 'ignition/hazard'), (snapshot) => {
     hazardActive = (snapshot.val() === "ON");
-    hazardBtn.innerText = `HAZARD: ${hazardActive ? "ON" : "OFF"}`;
+    if (hazardBtn) {
+        hazardBtn.innerText = `HAZARD: ${hazardActive ? "ON" : "OFF"}`;
+    }
 });
 
-hazardBtn.onclick = () => {
-    updateDB('hazard', hazardActive ? "OFF" : "ON");
-};
+if (hazardBtn) {
+    hazardBtn.onclick = () => {
+        updateDB('hazard', hazardActive ? "OFF" : "ON");
+    };
+}
 
 
-// --- 5. ANTI-THEFT (Toggle) ---
+// --- 4. ANTI-THEFT / SECURITY (Toggle) ---
 const securityToggle = document.getElementById('securityToggle');
-securityToggle.onchange = (e) => {
-    const state = e.target.checked ? "LOCKED" : "UNLOCKED";
-    updateDB('security', state);
-    document.getElementById('securityStatus').innerText = `System: ${state}`;
-};
+const securityStatus = document.getElementById('securityStatus');
+
+if (securityToggle) {
+    securityToggle.onchange = (e) => {
+        const state = e.target.checked ? "LOCKED" : "UNLOCKED";
+        updateDB('security', state);
+        if (securityStatus) {
+            securityStatus.innerText = `System: ${state}`;
+        }
+    };
+}
 
 
-// --- 6. ENGINE STATUS MONITOR (The one that turns GREEN) ---
+// --- 5. ENGINE STATUS MONITOR (Dashboard UI Update) ---
+// Ito ang nagpapalit ng kulay ng ENGINE box sa Dashboard
 onValue(ref(db, 'ignition/engine'), (snapshot) => {
     const val = snapshot.val() || "OFF";
     const statusBox = document.getElementById('statusBox');
     
-    statusBox.innerText = `ENGINE: ${val}`;
-    
-    // Dito nagpapalit ang kulay base sa value sa Firebase
-    if (val === "ON") {
-        statusBox.className = "status on"; // Magiging Green (based on CSS)
-    } else {
-        statusBox.className = "status off"; // Magiging Red
+    if (statusBox) {
+        statusBox.innerText = `ENGINE: ${val}`;
+        
+        // CSS class switcher para sa kulay
+        if (val === "ON") {
+            statusBox.className = "status on"; // Magiging Green
+        } else {
+            statusBox.className = "status off"; // Magiging Red
+        }
     }
 });
