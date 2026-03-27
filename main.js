@@ -14,11 +14,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Helper function para sa Firebase updates
 const updateDB = (path, state) => set(ref(db, `ignition/${path}`), state);
 
-// --- 1. ENGINE CONTROL (START & STOP) ---
-// Inalis na natin ang 'start' path, 'engine' status na lang ang gagamitin
 const btnStart = document.getElementById('btnStart');
 const btnStop = document.getElementById('btnStop');
 
@@ -31,7 +28,6 @@ if (btnStop) {
 }
 
 
-// --- 2. HORN (Momentary Control) ---
 const hornBtn = document.getElementById('btnHorn');
 
 if (hornBtn) {
@@ -41,18 +37,16 @@ if (hornBtn) {
     };
     const hornOff = () => updateDB('horn', "OFF");
 
-    // Mouse events
+
     hornBtn.onmousedown = hornOn;
     hornBtn.onmouseup = hornOff;
     hornBtn.onmouseleave = hornOff;
 
-    // Touch events for Mobile
     hornBtn.addEventListener('touchstart', hornOn, { passive: false });
     hornBtn.addEventListener('touchend', hornOff);
 }
 
 
-// --- 3. HAZARD (Toggle Control) ---
 const hazardBtn = document.getElementById('btnHazard');
 let hazardActive = false;
 
@@ -70,7 +64,6 @@ if (hazardBtn) {
 }
 
 
-// --- 4. ANTI-THEFT / SECURITY (Toggle) ---
 const securityToggle = document.getElementById('securityToggle');
 const securityStatus = document.getElementById('securityStatus');
 
@@ -84,9 +77,6 @@ if (securityToggle) {
     };
 }
 
-
-// --- 5. ENGINE STATUS MONITOR (Dashboard UI Update) ---
-// Ito ang nagpapalit ng kulay ng ENGINE box sa Dashboard
 onValue(ref(db, 'ignition/engine'), (snapshot) => {
     const val = snapshot.val() || "OFF";
     const statusBox = document.getElementById('statusBox');
@@ -94,11 +84,10 @@ onValue(ref(db, 'ignition/engine'), (snapshot) => {
     if (statusBox) {
         statusBox.innerText = `ENGINE: ${val}`;
         
-        // CSS class switcher para sa kulay
         if (val === "ON") {
-            statusBox.className = "status on"; // Magiging Green
+            statusBox.className = "status on";
         } else {
-            statusBox.className = "status off"; // Magiging Red
+            statusBox.className = "status off";
         }
     }
 });
